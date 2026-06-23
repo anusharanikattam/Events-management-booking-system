@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventPro · Stunning Visuals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+        body { background:#0f172a; color:white; transition:.3s; padding-top:80px; }
+        body.light { background:#f5f5f5; color:#111; }
+        nav { position:fixed; top:0; width:100%; padding:15px 8%; display:flex; justify-content:space-between; align-items:center; backdrop-filter:blur(15px); background:rgba(255,255,255,.08); border-bottom:1px solid rgba(255,255,255,.1); z-index:999; }
+        body.light nav { background:rgba(255,255,255,.8); border-bottom:1px solid #ddd; }
+        .logo { font-size:28px; font-weight:700; color:#00e5ff; }
+        nav ul { display:flex; list-style:none; gap:25px; }
+        nav ul li a { text-decoration:none; color:white; font-weight:500; }
+        body.light nav ul li a { color:#111; }
+        .actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .btn { padding:10px 18px; border:none; border-radius:10px; font-weight:600; cursor:pointer; }
+        .login-btn { background:#00e5ff; color:black; }
+        .register-btn { background:#8b5cf6; color:white; }
+        .mode-btn { background:white; color:#111; }
+        body.light .mode-btn { background:#111; color:white; }
+        .section { padding:40px 8% 60px; }
+        .section-title { font-size:36px; margin-bottom:30px; text-align:center; }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(6px); padding:20px; border-radius:20px; transition:.3s; margin-bottom:20px; border:1px solid rgba(255,255,255,.05); }
+        body.light .card { background:white; box-shadow:0 4px 20px rgba(0,0,0,.05); border:1px solid #eee; }
+        .card:hover { transform:translateY(-5px); }
+        .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px; }
+        input, select, textarea { width:100%; padding:12px; margin:8px 0; border:none; border-radius:12px; background:rgba(255,255,255,.1); color:white; }
+        body.light input, body.light select, body.light textarea { background:#f0f0f0; color:#111; }
+        button { padding:12px 24px; border:none; border-radius:12px; background:#00e5ff; font-weight:600; cursor:pointer; margin:5px 0; }
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.7); display:none; justify-content:center; align-items:center; z-index:1000; }
+        .modal-content { width:400px; max-width:92%; padding:30px; background:#1e293b; border-radius:24px; }
+        body.light .modal-content { background:white; color:#111; }
+        .close { float:right; font-size:28px; cursor:pointer; }
+        .toast { position:fixed; bottom:20px; right:20px; background:#00e676; padding:15px 25px; border-radius:12px; display:none; z-index:9999; font-weight:500; color:#111; }
+        footer { padding:30px; text-align:center; background:#020617; margin-top:40px; }
+        body.light footer { background:#ddd; color:#111; }
+        .events-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:25px; }
+        .event-card { background:rgba(255,255,255,.06); border-radius:24px; overflow:hidden; transition:.4s; border:1px solid rgba(255,255,255,.08); }
+        body.light .event-card { background:white; border:1px solid #eee; box-shadow:0 8px 30px rgba(0,0,0,.06); }
+        .event-card:hover { transform:translateY(-10px); box-shadow:0 20px 40px rgba(0,229,255,.15); }
+        .event-card img { width:100%; height:200px; object-fit:cover; display:block; }
+        .event-card .info { padding:18px; }
+        .event-card h3 { font-size:20px; margin-bottom:6px; }
+        .event-card .meta { display:flex; gap:12px; flex-wrap:wrap; font-size:14px; opacity:.8; margin:6px 0; }
+        .badge { background:#00e5ff; color:#111; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+        .flex { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+        .hero-image { width:100%; height:420px; object-fit:cover; border-radius:28px; margin-bottom:20px; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+        .hero-section { padding:20px 8% 10px; }
+        @media(max-width:768px){ nav ul { display:none; } .hero-image { height:200px; } }
+        .category-tag { background:rgba(0,229,255,.15); padding:4px 14px; border-radius:30px; font-size:13px; }
+        .price-tag { font-weight:700; color:#00e5ff; font-size:18px; }
+        .saved-booking-banner { background:linear-gradient(135deg,#00e5ff20,#8b5cf620); padding:16px; border-radius:16px; border-left:4px solid #00e5ff; margin-top:12px; }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="logo">EventPro</div>
+    <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#admin">Admin</a></li>
+    </ul>
+    <div class="actions">
+        <button class="btn login-btn" onclick="openLogin()">Login</button>
+        <button class="btn register-btn" onclick="openRegister()">Register</button>
+        <button class="btn mode-btn" onclick="toggleMode()">🌙</button>
+    </div>
+</nav>
+
+<!-- HERO with attractive image -->
+<section id="home" class="hero-section">
+    <img class="hero-image" src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&h=400&fit=crop&crop=center" alt="Event hero">
+    <div style="text-align:center; padding:10px 0 30px;">
+        <h1 style="font-size:52px; font-weight:700;">Discover <span style="color:#00e5ff;">Amazing</span> Events</h1>
+        <p style="max-width:600px; margin:16px auto; opacity:.8;">Book concerts, conferences, sports & more — all in one place.</p>
+        <div class="flex" style="justify-content:center;">
+            <button class="btn" style="background:#00e5ff; padding:14px 40px;">Explore Now</button>
+            <button class="btn" style="background:#8b5cf6;color:white; padding:14px 40px;">Join Community</button>
+        </div>
+    </div>
+</section>
+
+<!-- EVENTS with attractive images -->
+<section id="events" class="section">
+    <h2 class="section-title">🔥 Featured Events</h2>
+    <div class="flex" style="margin-bottom:24px; justify-content:center;">
+        <input type="text" id="searchInput" placeholder="Search events..." style="flex:2; max-width:400px;">
+        <select id="categoryFilter" style="flex:1; max-width:180px;">
+            <option value="all">All Categories</option>
+            <option>Music</option><option>Tech</option><option>Sports</option>
+            <option>Workshop</option><option>Fest</option>
+        </select>
+        <button onclick="filterEvents()">Search</button>
+    </div>
+    <div id="eventContainer" class="events-grid"></div>
+</section>
+
+<!-- DASHBOARD + CALENDAR BOOKING -->
+<section id="dashboard" class="section">
+    <h2 class="section-title">👤 Dashboard & Calendar Booking</h2>
+    <div class="dashboard-grid">
+        <div class="card"><h3>Profile</h3><p id="profileName">Guest</p><p id="profileEmail">—</p><button onclick="loadProfile()">Refresh</button></div>
+        <div class="card"><h3>Wishlist</h3><div id="wishlistContainer"><p>No favorites</p></div></div>
+        <div class="card"><h3>Notifications</h3><div id="notifications"><p>Welcome!</p></div></div>
+    </div>
+
+    <!-- BOOKING WITH CALENDAR -->
+    <div class="card" style="margin-top:20px; background:linear-gradient(145deg, rgba(0,229,255,.05), rgba(139,92,246,.05));">
+        <h3>🎟 Book Tickets · Select Date</h3>
+        <div class="flex">
+            <select id="bookingEvent" style="flex:2;">
+                <option>Music Festival 2026</option>
+                <option>AI Conference</option>
+                <option>Cricket Championship</option>
+                <option>Web Dev Workshop</option>
+                <option>College Fest</option>
+            </select>
+            <input type="date" id="bookingDate" style="flex:1.5;">
+            <input type="number" id="ticketCount" value="1" min="1" max="10" style="flex:1;">
+        </div>
+        <p>Available Seats: <span id="availableSeats" style="font-weight:700;color:#00e5ff;">100</span></p>
+        <div class="flex">
+            <button onclick="openPayment()" style="background:#00e5ff;">Proceed to Pay</button>
+            <button onclick="saveCalendarBooking()" style="background:#8b5cf6;color:white;">💾 Save Date & Book</button>
+        </div>
+        <div id="savedBookingInfo" style="display:none;" class="saved-booking-banner"></div>
+    </div>
+
+    <div class="card"><h3>📋 My Bookings</h3><div id="bookingHistory"></div></div>
+    <div class="card"><h3>🧾 My Tickets</h3><div id="ticketContainer"><p>No tickets yet</p></div></div>
+</section>
+
+<!-- ADMIN -->
+<section id="admin" class="section">
+    <h2 class="section-title">🔐 Admin Access</h2>
+    <div class="card">
+        <input type="text" id="adminUser" placeholder="Username" value="admin">
+        <input type="password" id="adminPass" placeholder="Password" value="admin123">
+        <button onclick="adminLogin()">Login</button>
+    </div>
+    <div id="adminDashboard" style="display:none;">
+        <div class="dashboard-grid">
+            <div class="card"><h3>Events</h3><h1 id="totalEvents">0</h1></div>
+            <div class="card"><h3>Users</h3><h1 id="totalUsers">0</h1></div>
+            <div class="card"><h3>Bookings</h3><h1 id="totalBookings">0</h1></div>
+            <div class="card"><h3>Revenue</h3><h1 id="totalRevenue">₹0</h1></div>
+        </div>
+        <div class="card"><h3>➕ Add Event</h3>
+            <input type="text" id="eventName" placeholder="Event Name">
+            <input type="date" id="eventDate">
+            <select id="eventCategory"><option>Music</option><option>Tech</option><option>Sports</option><option>Workshop</option><option>Fest</option></select>
+            <input type="text" id="eventLocation" placeholder="Location">
+            <input type="number" id="eventPrice" placeholder="Price">
+            <input type="number" id="eventSeats" placeholder="Seats">
+            <button onclick="saveEvent()">Save Event</button>
+        </div>
+        <div class="card"><h3>📋 Manage Events</h3><div id="adminEvents"></div></div>
+        <div class="card"><h3>👥 Users</h3><div id="adminUsers"></div></div>
+        <div class="card"><h3>📊 Revenue Chart</h3><canvas id="revenueChart" height="120"></canvas></div>
+        <div class="flex"><button onclick="exportCSV()">Export CSV</button><button onclick="exportRevenuePDF()">Export PDF</button></div>
+    </div>
+</section>
+
+<!-- MODALS -->
+<div class="modal" id="loginModal"><div class="modal-content"><span class="close" onclick="closeLogin()">×</span><h2>Login</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button onclick="loginUser()">Login</button></div></div>
+<div class="modal" id="registerModal"><div class="modal-content"><span class="close" onclick="closeRegister()">×</span><h2>Register</h2><input type="text" id="regName" placeholder="Full Name"><input type="email" id="regEmail" placeholder="Email"><input type="password" id="regPassword" placeholder="Password"><button onclick="registerUser()">Register</button></div></div>
+<div class="modal" id="paymentModal"><div class="modal-content"><span class="close" onclick="closePayment()">×</span><h2>Payment</h2><select id="paymentMethod"><option>UPI</option><option>Card</option></select><input id="upiId" placeholder="UPI ID"><input id="cardNumber" placeholder="Card Number"><input id="cardName" placeholder="Card Holder"><input id="cardCVV" placeholder="CVV"><button onclick="processPayment()">Pay Now</button></div></div>
+<div class="modal" id="eventModal"><div class="modal-content"><span class="close" onclick="closeEventModal()">×</span><h2 id="eventTitle"></h2><p id="eventDesc"></p><p id="eventDateModal"></p><button onclick="addToWishlist()">❤️ Add to Wishlist</button></div></div>
+
+<div class="toast" id="toast">✅ Success</div>
+<footer>© 2026 EventPro Ultimate · Stunning Visuals</footer>
+
+<script>
+    // ========== GLOBALS ==========
+    let selectedEvent = null;
+    let availableSeats = 100;
+    let editId = null;
+    let chartInstance = null;
+
+    // ========== TOAST ==========
+    function showToast(msg) {
+        let t = document.getElementById('toast');
+        t.innerHTML = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    // ========== THEME ==========
+    function toggleMode() {
+        document.body.classList.toggle('light');
+        localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+    if (localStorage.getItem('theme') === 'light') document.body.classList.add('light');
+
+    // ========== MODALS ==========
+    function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
+    function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
+    function openRegister() { document.getElementById('registerModal').style.display = 'flex'; }
+    function closeRegister() { document.getElementById('registerModal').style.display = 'none'; }
+    function closePayment() { document.getElementById('paymentModal').style.display = 'none'; }
+    function closeEventModal() { document.getElementById('eventModal').style.display = 'none'; }
+
+    // ========== AUTH ==========
+    function registerUser() {
+        let name = document.getElementById('regName').value;
+        let email = document.getElementById('regEmail').value;
+        let password = document.getElementById('regPassword').value;
+        if (!name || !email || !password) return showToast('Fill all fields');
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        if (users.find(u => u.email === email)) return showToast('Email already registered');
+        users.push({ name, email, password });
+        localStorage.setItem('users', JSON.stringify(users));
+        showToast('Registered!');
+        closeRegister();
+    }
+
+    function loginUser() {
+        let email = document.getElementById('loginEmail').value;
+        let password = document.getElementById('loginPassword').value;
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let user = users.find(u => u.email === email && u.password === password);
+        if (!user) return showToast('Invalid credentials');
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        showToast('Welcome ' + user.name);
+        closeLogin();
+        loadProfile();
+        loadBookings();
+        loadWishlist();
+    }
+
+    function loadProfile() {
+        let user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!user) return;
+        document.getElementById('profileName').innerHTML = user.name;
+        document.getElementById('profileEmail').innerHTML = user.email;
+    }
+
+    // ========== EVENTS with images ==========
+    const defaultEvents = [
+        { id: 1, name: 'Music Festival 2026', category: 'Music', date: '2026-09-10', description: 'Biggest concert of the year', location: 'NYC', price: 500, seats: 100, image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=200&fit=crop' },
+        { id: 2, name: 'AI Conference', category: 'Tech', date: '2026-08-15', description: 'Future of AI & ML', location: 'SFO', price: 300, seats: 80, image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=200&fit=crop' },
+        { id: 3, name: 'Cricket Championship', category: 'Sports', date: '2026-10-20', description: 'National cricket finals', location: 'LON', price: 400, seats: 120, image: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&h=200&fit=crop' },
+        { id: 4, name: 'Web Dev Workshop', category: 'Workshop', date: '2026-07-18', description: 'Full stack development bootcamp', location: 'Online', price: 150, seats: 200, image: 'https://images.unsplash.com/photo-1581276879432-15e50529f34b?w=400&h=200&fit=crop' },
+        { id: 5, name: 'College Fest 2026', category: 'Fest', date: '2026-11-05', description: 'Annual cultural extravaganza', location: 'Campus', price: 200, seats: 300, image: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&h=200&fit=crop' },
+    ];
+
+    function getEvents() {
+        let stored = JSON.parse(localStorage.getItem('events')) || [];
+        return [...defaultEvents, ...stored];
+    }
+
+    function loadEvents(data = null) {
+        let events = data || getEvents();
+        let container = document.getElementById('eventContainer');
+        container.innerHTML = '';
+        events.forEach(ev => {
+            let days = Math.floor((new Date(ev.date) - new Date()) / (1000 * 60 * 60 * 24));
+            let img = ev.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=200&fit=crop';
+            container.innerHTML += `
+                <div class="event-card">
+                    <img src="${img}" alt="${ev.name}" loading="lazy">
+                    <div class="info">
+                        <h3>${ev.name}</h3>
+                        <div class="meta">
+                            <span class="category-tag">${ev.category}</span>
+                            <span>📅 ${ev.date}</span>
+                            <span>📍 ${ev.location || 'Online'}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <span class="price-tag">₹${ev.price || 0}</span>
+                            <span style="font-size:14px; opacity:.7;">${days > 0 ? days + ' days left' : '🔥 Today'}</span>
+                        </div>
+                        <button onclick="showEvent(${ev.id})" style="width:100%; margin-top:12px; background:#00e5ff; color:#111;">View Details</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function showEvent(id) {
+        let events = getEvents();
+        selectedEvent = events.find(e => e.id === id);
+        if (!selectedEvent) return;
+        document.getElementById('eventTitle').innerHTML = selectedEvent.name;
+        document.getElementById('eventDesc').innerHTML = selectedEvent.description || 'Amazing event!';
+        document.getElementById('eventDateModal').innerHTML = '📅 ' + selectedEvent.date + ' · ' + (selectedEvent.location || 'Online');
+        document.getElementById('eventModal').style.display = 'flex';
+    }
+
+    function filterEvents() {
+        let search = document.getElementById('searchInput').value.toLowerCase();
+        let cat = document.getElementById('categoryFilter').value;
+        let all = getEvents();
+        let filtered = all.filter(e => {
+            let matchName = e.name.toLowerCase().includes(search);
+            let matchCat = cat === 'all' || e.category === cat;
+            return matchName && matchCat;
+        });
+        loadEvents(filtered);
+    }
+
+    // ========== WISHLIST ==========
+    function addToWishlist() {
+        if (!selectedEvent) return;
+        let wish = JSON.parse(localStorage.getItem('wishlist')) || [];
+        if (wish.find(w => w.id === selectedEvent.id)) return showToast('Already in wishlist');
+        wish.push(selectedEvent);
+        localStorage.setItem('wishlist', JSON.stringify(wish));
+        showToast('Added to wishlist ❤️');
+        loadWishlist();
+    }
+    function loadWishlist() {
+        let wish = JSON.parse(localStorage.getItem('wishlist')) || [];
+        let box = document.getElementById('wishlistContainer');
+        box.innerHTML = wish.length ? wish.map(w => `<p>❤️ ${w.name}</p>`).join('') : '<p>No favorites</p>';
+    }
+
+    // ========== CALENDAR BOOKING ==========
+    function saveCalendarBooking() {
+        let eventName = document.getElementById('bookingEvent').value;
+        let date = document.getElementById('bookingDate').value;
+        let tickets = parseInt(document.getElementById('ticketCount').value) || 1;
+        if (!date) return showToast('Please select a date for booking');
+        if (tickets < 1 || tickets > availableSeats) return showToast('Invalid ticket count');
+        let saved = { event: eventName, date: date, tickets: tickets, savedAt: new Date().toISOString() };
+        localStorage.setItem('savedBooking', JSON.stringify(saved));
+        let info = document.getElementById('savedBookingInfo');
+        info.style.display = 'block';
+        info.innerHTML = `
+            <strong>✅ Booking Saved!</strong><br>
+            Event: ${eventName} · Date: ${date} · Tickets: ${tickets}
+            <br><span style="color:#00e5ff;">Click "Proceed to Pay" to confirm.</span>
+        `;
+        showToast('Booking date saved!');
+    }
+
+    function openPayment() {
+        let tickets = parseInt(document.getElementById('ticketCount').value);
+        if (tickets < 1 || tickets > availableSeats) return showToast('Invalid seats');
+        document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function processPayment() {
+        let eventName = document.getElementById('bookingEvent').value;
+        let tickets = parseInt(document.getElementById('ticketCount').value);
+        if (tickets > availableSeats) return showToast('Not enough seats');
+        let saved = JSON.parse(localStorage.getItem('savedBooking'));
+        let bookingDate = saved && saved.event === eventName ? saved.date : new Date().toISOString().slice(0,10);
+        let amount = tickets * 500;
+        let txnId = 'TXN' + Math.floor(100000 + Math.random() * 900000);
+        let bookingId = 'BK' + Math.floor(100000 + Math.random() * 900000);
+        let booking = { id: bookingId, event: eventName, date: bookingDate, tickets, amount, status: 'Confirmed', bookedAt: new Date().toLocaleDateString(), txnId };
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        bookings.push(booking);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        availableSeats -= tickets;
+        document.getElementById('availableSeats').innerHTML = availableSeats;
+        localStorage.removeItem('savedBooking');
+        document.getElementById('savedBookingInfo').style.display = 'none';
+        showToast('Payment Success ✅');
+        closePayment();
+        loadBookings();
+        generateTicket(booking);
+        loadAdminStats();
+    }
+
+    function loadBookings() {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let box = document.getElementById('bookingHistory');
+        box.innerHTML = bookings.length ? bookings.map(b => `
+            <div class="card" style="padding:12px;margin:6px 0;">
+                <strong>${b.event}</strong> · ${b.tickets} tickets · ₹${b.amount} · ${b.status}
+                <span class="badge">📅 ${b.date || 'N/A'}</span>
+                <button onclick="cancelBooking('${b.id}')">Cancel</button>
+            </div>
+        `).join('') : '<p>No bookings</p>';
+    }
+
+    function cancelBooking(id) {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let b = bookings.find(bk => bk.id === id);
+        if (b) b.status = 'Cancelled';
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        loadBookings();
+        showToast('Cancelled');
+    }
+
+    function generateTicket(book) {
+        let qr = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${book.id}`;
+        document.getElementById('ticketContainer').innerHTML = `
+            <div class="card">
+                <h4>${book.event}</h4>
+                <p>ID: ${book.id} · ${book.tickets} tickets</p>
+                <p>📅 ${book.date || 'N/A'}</p>
+                <img src="${qr}" width="150">
+                <button onclick="downloadTicketPDF()">PDF Ticket</button>
+            </div>
+        `;
+    }
+
+    function downloadTicketPDF() {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        if (!bookings.length) return showToast('No ticket');
+        let b = bookings[bookings.length - 1];
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF();
+        doc.text('EventPro Ticket', 20, 20);
+        doc.text('Booking: ' + b.id, 20, 40);
+        doc.text('Event: ' + b.event, 20, 50);
+        doc.text('Date: ' + (b.date || 'N/A'), 20, 60);
+        doc.text('Tickets: ' + b.tickets, 20, 70);
+        doc.text('Amount: ₹' + b.amount, 20, 80);
+        doc.save('Ticket.pdf');
+    }
+
+    // ========== ADMIN ==========
+    const ADMIN_USER = 'admin', ADMIN_PASS = 'admin123';
+    function adminLogin() {
+        let u = document.getElementById('adminUser').value;
+        let p = document.getElementById('adminPass').value;
+        if (u === ADMIN_USER && p === ADMIN_PASS) {
+            document.getElementById('adminDashboard').style.display = 'block';
+            showToast('Admin logged in');
+            loadAdminStats(); loadAdminEvents(); loadAdminUsers(); createRevenueChart();
+        } else showToast('Invalid admin');
+    }
+
+    function loadAdminStats() {
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        let revenue = bookings.filter(b => b.status === 'Confirmed').reduce((sum, b) => sum + b.amount, 0);
+        document.getElementById('totalUsers').innerHTML = users.length;
+        document.getElementById('totalBookings').innerHTML = bookings.length;
+        document.getElementById('totalRevenue').innerHTML = '₹' + revenue;
+        document.getElementById('totalEvents').innerHTML = events.length + defaultEvents.length;
+    }
+
+    function loadAdminEvents() {
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        let box = document.getElementById('adminEvents');
+        box.innerHTML = events.length ? events.map(e => `
+            <div class="card" style="padding:12px;margin:6px 0;">
+                <strong>${e.name}</strong> · ${e.category} · ${e.date}
+                <button onclick="editEventPrompt(${e.id})">✏️</button>
+                <button onclick="deleteEvent(${e.id})">🗑️</button>
+            </div>
+        `).join('') : '<p>No custom events</p>';
+    }
+
+    function editEventPrompt(id) {
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        let ev = events.find(e => e.id === id);
+        if (!ev) return;
+        let newName = prompt('Edit name', ev.name);
+        if (newName) ev.name = newName;
+        let newDate = prompt('Edit date (YYYY-MM-DD)', ev.date);
+        if (newDate) ev.date = newDate;
+        localStorage.setItem('events', JSON.stringify(events));
+        loadAdminEvents(); loadEvents(); showToast('Updated');
+    }
+
+    function deleteEvent(id) {
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        events = events.filter(e => e.id !== id);
+        localStorage.setItem('events', JSON.stringify(events));
+        loadAdminEvents(); loadEvents(); showToast('Deleted');
+    }
+
+    function saveEvent() {
+        let name = document.getElementById('eventName').value;
+        let date = document.getElementById('eventDate').value;
+        let category = document.getElementById('eventCategory').value;
+        let location = document.getElementById('eventLocation').value || 'Online';
+        let price = parseInt(document.getElementById('eventPrice').value) || 0;
+        let seats = parseInt(document.getElementById('eventSeats').value) || 50;
+        if (!name || !date) return showToast('Name & Date required');
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        if (editId) {
+            let ev = events.find(e => e.id === editId);
+            if (ev) { ev.name = name; ev.date = date; ev.category = category; ev.location = location; ev.price = price; ev.seats = seats; }
+            editId = null;
+        } else {
+            let newEvent = { id: Date.now() + 1000, name, date, category, location, price, seats, description: 'Awesome event', image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=200&fit=crop' };
+            events.push(newEvent);
+        }
+        localStorage.setItem('events', JSON.stringify(events));
+        showToast('Event saved');
+        document.getElementById('eventName').value = '';
+        document.getElementById('eventDate').value = '';
+        loadAdminEvents(); loadEvents(); loadAdminStats();
+    }
+
+    function loadAdminUsers() {
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let box = document.getElementById('adminUsers');
+        box.innerHTML = users.length ? users.map(u => `<div class="card" style="padding:10px;">${u.name} · ${u.email}</div>`).join('') : '<p>No users</p>';
+    }
+
+    function createRevenueChart() {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let labels = bookings.map((_, i) => 'B' + (i + 1));
+        let data = bookings.map(b => b.amount);
+        if (chartInstance) chartInstance.destroy();
+        let ctx = document.getElementById('revenueChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Revenue (₹)', data, backgroundColor: '#00e5ff' }] },
+            options: { responsive: true }
+        });
+    }
+
+    function exportCSV() {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let csv = 'BookingID,Event,Date,Amount,Status\n' + bookings.map(b => `${b.id},${b.event},${b.date||'N/A'},${b.amount},${b.status}`).join('\n');
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'EventReport.csv';
+        a.click();
+        showToast('CSV exported');
+    }
+
+    function exportRevenuePDF() {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF();
+        doc.text('Revenue Report', 20, 10);
+        let y = 20;
+        bookings.forEach(b => { doc.text(`${b.id} | ${b.event} | ${b.date||'N/A'} | ₹${b.amount}`, 20, y); y += 8; });
+        doc.save('RevenueReport.pdf');
+    }
+
+    function loadNotifications() {
+        document.getElementById('notifications').innerHTML = `
+            <p>🎉 Welcome to EventPro</p>
+            <p>🔥 New events added daily</p>
+            <p>📅 Save your booking date!</p>
+        `;
+    }
+
+    // ========== INIT ==========
+    loadEvents();
+    loadWishlist();
+    loadProfile();
+    loadBookings();
+    loadNotifications();
+    document.getElementById('availableSeats').innerHTML = availableSeats;
+    if (localStorage.getItem('currentUser')) loadProfile();
+
+    let saved = JSON.parse(localStorage.getItem('savedBooking'));
+    if (saved) {
+        let info = document.getElementById('savedBookingInfo');
+        info.style.display = 'block';
+        info.innerHTML = `
+            <strong>📅 Saved Booking</strong><br>
+            Event: ${saved.event} · Date: ${saved.date} · Tickets: ${saved.tickets}
+            <br><span style="color:#00e5ff;">Proceed to pay to confirm.</span>
+        `;
+    }
+
+    setInterval(() => {
+        if (document.getElementById('adminDashboard').style.display === 'block') loadAdminStats();
+    }, 10000);
+</script>
+</body>
+</html>
